@@ -80,9 +80,29 @@ control MyVerifyChecksum(inout headers hdr, inout metadata meta) {
 control MyIngress(inout headers hdr,
                   inout metadata meta,
                   inout standard_metadata_t standard_metadata) {
-    
+
+    action setEgress(bit<9>  egressPort) {
+        standard_metadata.egress_spec = egressPort;
+    }
+
+    table macLookup{
+        key = {hdr.ethernet.dstAddr : exact;}
+        actions = { 
+            setEgress;
+            NoAction;
+        }
+        size = 1024;
+        default_action = NoAction();
+    }
+     
     apply {
-       standard_metadata.mcast_grp = 1; // Broadcast to all ports
+       if(hdr.ethernet.isValid()){
+        if(!macLookup.apply().hit){
+            standard_metadata.mcast_grp = 1;
+        }
+       } else {
+         mark_to_drop(standard_metadata);
+       }
     }
 }
 
