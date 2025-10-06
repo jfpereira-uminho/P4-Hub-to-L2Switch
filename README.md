@@ -29,3 +29,55 @@ Modify `hub.p4` to implement an **L2 switch** with the following behavior:
 2. **Forwarding Logic**:
    - For packets with a **known destination MAC**, forward them to the corresponding port.
    - For packets with an **unknown destination MAC**, broadcast them to all ports except the ingress port.
+
+---
+## **Hub Scenario**
+### Compile
+```bash
+p4c-bm2-ss --std p4-16  p4/task1-hub.p4 -o json/task1-hub.json
+```
+
+### Run
+```bash
+sudo python3 mininet/task1-topo.py --json json/task1-hub.json
+```
+
+### Load flow rules
+```bash
+simple_switch_CLI --thrift-port 9090 < flows/flows.txt
+```
+
+### Test
+```bash
+mininet> h1 ping h2 -c 5
+```
+
+## Debugging Tips
+
+Here are some useful commands to help troubleshoot and verify your topology:
+
+### 1. **Wireshark (Packet Capture)**
+
+### 2. **ARP Table Inspection**
+   - **Command:** `arp -n`
+   - **Usage:** Check the ARP table on any Mininet host to ensure proper IP-to-MAC Default gateway resolution.
+   - Example:
+     ```bash
+     mininet> h1 arp -n
+     ```
+
+### 3. **Interface Information**
+   - **Command:** `ip link`
+   - **Usage:** Display the state and configuration of network interfaces for each host or router.
+   - Example:
+     ```bash
+     mininet> s1 ip link
+     ```
+
+### 4. **P4 Runtime Client for Monitoring**
+   - **Command:** `sudo ./tools/nanomsg_client.py --thrift-port <r1_port or r2_port>`
+   - **Usage:** Interact with the P4 runtime to inspect flow tables and rules loaded on each router.
+   - Example:
+     ```bash
+     sudo ./tools/nanomsg_client.py --thrift-port 9090
+     ```
